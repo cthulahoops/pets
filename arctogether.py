@@ -60,7 +60,9 @@ async def create_bot(name, emoji, x=5, y=2, direction="right", can_be_mentioned=
 
 async def update_bot(bot_id, bot_attributes):
     async with aiohttp.ClientSession() as session:
-        async with session.patch(api_url("bots", bot_id), json={"bot": bot_attributes}) as response:
+        async with session.patch(
+            api_url("bots", bot_id), json={"bot": bot_attributes}
+        ) as response:
             return await parse_response(response)
 
 
@@ -95,7 +97,9 @@ class Bot:
         self.handle_update = handle_update
 
     @classmethod
-    async def create(cls, name, emoji, x, y, handle_update=None, can_be_mentioned=False):
+    async def create(
+        cls, name, emoji, x, y, handle_update=None, can_be_mentioned=False
+    ):
         bot_json = await create_bot(
             name=name, emoji=emoji, x=x, y=y, can_be_mentioned=can_be_mentioned
         )
@@ -164,7 +168,12 @@ class RcTogether:
                     pass
                 elif message_type == "welcome":
                     await connection.send(
-                        json.dumps({"command": "subscribe", "identifier": subscription_identifier})
+                        json.dumps(
+                            {
+                                "command": "subscribe",
+                                "identifier": subscription_identifier,
+                            }
+                        )
                     )
                 elif message_type == "confirm_subscription":
                     print("Subscription confirmed.")
@@ -179,7 +188,9 @@ class RcTogether:
                 else:
                     print("Unknown message type: ", message_type)
 
-    async def create_bot(self, name, emoji, x, y, handle_update, can_be_mentioned=False):
+    async def create_bot(
+        self, name, emoji, x, y, handle_update, can_be_mentioned=False
+    ):
         bot = await Bot.create(name, emoji, x, y, handle_update, can_be_mentioned)
         self.bots[bot.id] = bot
         return bot

@@ -521,7 +521,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "rctogether", specifier = ">=0.3.3" }]
+requires-dist = [{ name = "rctogether", specifier = ">=0.3.4" }]
 
 [package.metadata.requires-dev]
 dev = [

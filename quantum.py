@@ -14,7 +14,10 @@ class RealityLab:
         self.target_id = None
 
     async def handle_entity(self, entity):
-        if entity["pos"] == {"x": 158, "y": 3} and entity.get("person_name") == "Adam Kelly":
+        if (
+            entity["pos"] == {"x": 158, "y": 3}
+            and entity.get("person_name") == "Adam Kelly"
+        ):
             print("Initialise sequence!")
             asyncio.create_task(self.run_sequence())
 
@@ -54,7 +57,10 @@ class RealityLab:
         await arctogether.update_bot(bot.id, {"emoji": "🐞"})
 
     async def run_sequence(self):
-        locations = [{"x": random.randint(152, 169), "y": random.randint(8, 27)} for _ in range(20)]
+        locations = [
+            {"x": random.randint(152, 169), "y": random.randint(8, 27)}
+            for _ in range(20)
+        ]
         asyncio.gather(*[self.break_reality(pos) for pos in locations])
 
     async def start(self):
