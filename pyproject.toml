@@ -10,7 +10,7 @@ dependencies = [
     "rctogether>=0.3.3",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "ruff>=0.1.5",
     "black>=23.11.0",
