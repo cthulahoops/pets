@@ -572,6 +572,18 @@ async def test_successful_mystery_box_acquisition(genie, person):
             incoming_message(person, genie, "adopt a surprise, please!")
         )
 
+    # Pet should be renamed and emoji should be updated to the revealed pet
+    request = await session.get_request()
+    assert request.method == "patch"
+    assert request.path == "bots"
+    assert request.id == mystery_box["id"]
+    bot_update = request.json["bot"]
+    # Verify the emoji was changed from 🎁 to the revealed pet's emoji
+    assert "emoji" in bot_update
+    assert "name" in bot_update
+    updated_pet = [pet for pet in pets.PETS if pet["emoji"] == bot_update["emoji"]]
+    assert bot_update["name"] == updated_pet[0]["name"]
+
     # Mystery box should send a message with the noise of the revealed pet
     message = await session.message_received(mystery_box, person)
     assert message in pets.NOISES.values()
@@ -583,10 +595,6 @@ async def test_successful_mystery_box_acquisition(genie, person):
     assert request.id == mystery_box["id"]
     bot_update = request.json["bot"]
     assert person["person_name"] in bot_update["name"]
-    # Verify the emoji was changed from 🎁 to the revealed pet's emoji
-    assert "emoji" in bot_update
-    assert bot_update["emoji"] != "🎁"
-    assert bot_update["emoji"] in [pet["emoji"] for pet in pets.PETS]
 
     # Pet should move adjacent to person
     assert pets.is_adjacent(person["pos"], await session.moved_to())

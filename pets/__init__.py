@@ -320,7 +320,14 @@ class AgencySync:
             pet.bot_json["emoji"] = revealed_pet_type["emoji"]
             pet.bot_json["name"] = revealed_pet_type["name"]
 
-            update["emoji"] = revealed_pet_type["emoji"]
+            yield (
+                "sync_update_pet",
+                pet,
+                {
+                    "name": revealed_pet_type["name"],
+                    "emoji": revealed_pet_type["emoji"],
+                },
+            )
 
             yield (
                 "create_pet",
@@ -354,8 +361,7 @@ class AgencySync:
         self.pet_directory.set_owner(pet, adopter)
 
         yield ("send_message", adopter, NOISES.get(pet.emoji, "💖"), pet)
-        update["name"] = owned_pet_name(adopter, pet.type)
-        yield ("sync_update_pet", pet, update)
+        yield ("sync_update_pet", pet, {"name": owned_pet_name(adopter, pet.type)})
 
     def handle_abandon(self, adopter, pet_type):
         owned_pets = self.pet_directory.owned(adopter["id"])
