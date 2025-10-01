@@ -12,7 +12,9 @@ async def fetch_live_data():
 
 def main():
     parser = argparse.ArgumentParser(description="Show pet leaderboard")
-    parser.add_argument("file", nargs="?", help="JSON file to read (if not provided, fetches live data)")
+    parser.add_argument(
+        "file", nargs="?", help="JSON file to read (if not provided, fetches live data)"
+    )
     args = parser.parse_args()
 
     if args.file:
