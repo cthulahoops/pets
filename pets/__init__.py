@@ -84,6 +84,7 @@ SPAWN_POINTS = {
         (-7, 2),
     ]
 }
+MYSTERY_HOME = offset_position(GENIE_HOME, {"x": 5, "y": 2})
 
 CORRAL = Region({"x": 0, "y": 40}, {"x": 19, "y": 58})
 
@@ -255,6 +256,7 @@ class AgencySync:
         self.lured = Lured()
         self.avatars = {}
         self.genie = None
+        self.mystery = None
 
     def start(self, bots):
         for bot_json in bots:
@@ -269,6 +271,18 @@ class AgencySync:
                     "x": GENIE_HOME["x"],
                     "y": GENIE_HOME["y"],
                     "can_be_mentioned": True,
+                },
+            )
+
+        if not self.mystery:
+            yield (
+                "create_pet",
+                {
+                    "name": "Mystery Box",
+                    "emoji": "🎁",
+                    "x": MYSTERY_HOME["x"],
+                    "y": MYSTERY_HOME["y"],
+                    "can_be_mentioned": False,
                 },
             )
 
@@ -490,6 +504,9 @@ class AgencySync:
         if pet.emoji == GENIE_EMOJI:
             print("Found the genie: ", pet_json)
             self.genie = pet
+        elif pet.emoji == "🎁":
+            print("Found the mystery box: ", pet_json)
+            self.mystery = pet
         else:
             self.pet_directory.add(pet)
 
