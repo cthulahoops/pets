@@ -69,7 +69,20 @@ GENIE_EMOJI = "🧞"
 GENIE_HOME = parse_position(os.environ.get("GENIE_HOME", "60,15"))
 SPAWN_POINTS = {
     position_tuple(offset_position(GENIE_HOME, {"x": dx, "y": dy}))
-    for (dx, dy) in [(-2, -2), (0, -2), (2, -2), (-2, 0), (2, 0), (0, 2), (2, 2)]
+    for (dx, dy) in [
+        (-2, -2),
+        (0, -2),
+        (2, -2),
+        (-2, 0),
+        (2, 0),
+        (0, 2),
+        (2, 2),
+        (-4, 1),
+        (-5, 1),
+        (-6, 1),
+        (-7, 1),
+        (-7, 2),
+    ]
 }
 
 CORRAL = Region({"x": 0, "y": 40}, {"x": 19, "y": 58})
