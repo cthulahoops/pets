@@ -164,8 +164,8 @@ class Pet:
         return self.bot_json["name"]
 
 
-def owned_pet_name(owner, pet):
-    return f"{owner['person_name']}'s {pet.type}"
+def owned_pet_name(owner, pet_type):
+    return f"{owner['person_name']}'s {pet_type}"
 
 
 class PetDirectory:
@@ -302,6 +302,31 @@ class AgencySync:
         if pet_type == "apatosaurus":
             return "Since 2015 the brontasaurus and apatosaurus have been recognised as separate species. Would you like to adopt a brontasaurus?"
 
+        if pet_type == "surprise" or pet_type == "mystery":
+            pet_type = random.choice(PETS)
+            pet = self.mystery
+            return [
+                (
+                    "create_pet",
+                    {
+                        "name": "Mystery Box",
+                        "emoji": "🎁",
+                        "x": MYSTERY_HOME["x"],
+                        "y": MYSTERY_HOME["y"],
+                        "can_be_mentioned": False,
+                    },
+                ),
+                ("send_message", adopter, pet, NOISES.get(pet_type["emoji"], "💖")),
+                (
+                    "sync_update_pet",
+                    pet,
+                    {
+                        "name": owned_pet_name(adopter, pet_type["name"]),
+                        "emoji": pet_type["emoji"],
+                    },
+                ),
+            ]
+
         if pet_type == "pet":
             try:
                 pet = random.choice(list(self.pet_directory.available()))
@@ -322,7 +347,7 @@ class AgencySync:
 
         return [
             ("send_message", adopter, NOISES.get(pet.emoji, "💖"), pet),
-            ("sync_update_pet", pet, {"name": owned_pet_name(adopter, pet)}),
+            ("sync_update_pet", pet, {"name": owned_pet_name(adopter, pet.type)}),
         ]
 
     def handle_abandon(self, adopter, pet_type):
@@ -382,7 +407,7 @@ class AgencySync:
 
         return [
             ("send_message", recipient, NOISES.get(pet.emoji, "💖"), pet),
-            ("sync_update_pet", pet, {"name": owned_pet_name(recipient, pet)}),
+            ("sync_update_pet", pet, {"name": owned_pet_name(recipient, pet.type)}),
             ("update_pet", pet, position),
         ]
 
@@ -467,7 +492,7 @@ class AgencySync:
                 pet_update = offset_position(entity["pos"], random.choice(DELTAS))
 
             # Handle possible name change.
-            pet_name = owned_pet_name(entity, pet)
+            pet_name = owned_pet_name(entity, pet.type)
             if pet.name != pet_name:
                 pet_update["name"] = pet_name
 
