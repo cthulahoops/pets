@@ -316,7 +316,7 @@ class AgencySync:
                         "can_be_mentioned": False,
                     },
                 ),
-                ("send_message", adopter, pet, NOISES.get(pet_type["emoji"], "💖")),
+                ("send_message", adopter, NOISES.get(pet_type["emoji"], "💖"), pet),
                 (
                     "sync_update_pet",
                     pet,
