@@ -557,6 +557,42 @@ async def test_restock_full(genie, person, available_pets):
 
 
 @pytest.mark.asyncio
+async def test_successful_mystery_box_acquisition(genie, person):
+    mystery_box = {
+        "type": "Bot",
+        "id": 5555,
+        "name": "Mystery Box",
+        "emoji": "🎁",
+        "pos": {"x": pets.MYSTERY_HOME["x"], "y": pets.MYSTERY_HOME["y"]},
+    }
+    session = MockSession({"bots": [genie, mystery_box]})
+
+    async with await pets.Agency.create(session) as agency:
+        await agency.handle_entity(
+            incoming_message(person, genie, "adopt a surprise, please!")
+        )
+
+    # Mystery box should send a message with the noise of the revealed pet
+    message = await session.message_received(mystery_box, person)
+    assert message in pets.NOISES.values()
+
+    # Pet should be renamed and emoji should be updated to the revealed pet
+    request = await session.get_request()
+    assert request.method == "patch"
+    assert request.path == "bots"
+    assert request.id == mystery_box["id"]
+    bot_update = request.json["bot"]
+    assert person["person_name"] in bot_update["name"]
+    # Verify the emoji was changed from 🎁 to the revealed pet's emoji
+    assert "emoji" in bot_update
+    assert bot_update["emoji"] != "🎁"
+    assert bot_update["emoji"] in [pet["emoji"] for pet in pets.PETS]
+
+    # Pet should move adjacent to person
+    assert pets.is_adjacent(person["pos"], await session.moved_to())
+
+
+@pytest.mark.asyncio
 async def test_successful_give_pet(genie, person, petless_person, owned_cat):
     session = MockSession({"bots": [genie, owned_cat]})
 

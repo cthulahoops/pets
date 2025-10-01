@@ -171,6 +171,7 @@ def owned_pet_name(owner, pet_type):
 class PetDirectory:
     def __init__(self):
         self._available_pets = {}
+        self.mystery_pets = []
         self._owned_pets = defaultdict(list)
         self._pets_by_id = {}
 
@@ -179,6 +180,8 @@ class PetDirectory:
 
         if pet.owner:
             self._owned_pets[pet.owner].append(pet)
+        elif pet.emoji == "🎁":
+            self.mystery_pets.append(pet)
         else:
             self._available_pets[position_tuple(pet.pos)] = pet
 
@@ -187,7 +190,7 @@ class PetDirectory:
 
         if pet.owner:
             self._owned_pets[pet.owner].remove(pet)
-        else:
+        elif position_tuple(pet.pos) in self._available_pets:
             del self._available_pets[position_tuple(pet.pos)]
 
     def available(self):
@@ -256,7 +259,6 @@ class AgencySync:
         self.lured = Lured()
         self.avatars = {}
         self.genie = None
-        self.mystery = None
 
     def start(self, bots):
         for bot_json in bots:
@@ -274,7 +276,7 @@ class AgencySync:
                 },
             )
 
-        if not self.mystery:
+        if not self.pet_directory.mystery_pets:
             yield (
                 "create_pet",
                 {
@@ -291,48 +293,51 @@ class AgencySync:
 
     def handle_adoption(self, adopter, text, pet_type):
         if not any(please in text.lower() for please in MANNERS):
-            return "No please? Our pets are only available to polite homes."
+            yield "No please? Our pets are only available to polite homes."
+            return
 
         if pet_type == "horse":
-            return "Sorry, that's just a picture of a horse."
+            yield "Sorry, that's just a picture of a horse."
+            return
 
         if pet_type == "genie":
-            return "You can't adopt me. I'm not a pet!"
+            yield "You can't adopt me. I'm not a pet!"
+            return
 
         if pet_type == "apatosaurus":
-            return "Since 2015 the brontasaurus and apatosaurus have been recognised as separate species. Would you like to adopt a brontasaurus?"
+            yield "Since 2015 the brontasaurus and apatosaurus have been recognised as separate species. Would you like to adopt a brontasaurus?"
+            return
+
+        update = {}
 
         if pet_type == "surprise" or pet_type == "mystery":
-            pet_type = random.choice(PETS)
-            pet = self.mystery
-            self.pet_directory.set_owner(pet, adopter)
-            return [
-                (
-                    "create_pet",
-                    {
-                        "name": "Mystery Box",
-                        "emoji": "🎁",
-                        "x": MYSTERY_HOME["x"],
-                        "y": MYSTERY_HOME["y"],
-                        "can_be_mentioned": False,
-                    },
-                ),
-                ("send_message", adopter, NOISES.get(pet_type["emoji"], "💖"), pet),
-                (
-                    "sync_update_pet",
-                    pet,
-                    {
-                        "name": owned_pet_name(adopter, pet_type["name"]),
-                        "emoji": pet_type["emoji"],
-                    },
-                ),
-            ]
+            if not self.pet_directory.mystery_pets:
+                yield "Sorry, we don't have any mystery boxes at the moment."
+                return
+            pet = self.pet_directory.mystery_pets.pop()
 
-        if pet_type == "pet":
+            revealed_pet_type = random.choice(PETS)
+            pet.bot_json["emoji"] = revealed_pet_type["emoji"]
+            pet.bot_json["name"] = revealed_pet_type["name"]
+
+            update["emoji"] = revealed_pet_type["emoji"]
+
+            yield (
+                "create_pet",
+                {
+                    "name": "Mystery Box",
+                    "emoji": "🎁",
+                    "x": MYSTERY_HOME["x"],
+                    "y": MYSTERY_HOME["y"],
+                    "can_be_mentioned": False,
+                },
+            )
+        elif pet_type == "pet":
             try:
                 pet = random.choice(list(self.pet_directory.available()))
             except IndexError:
-                return "Sorry, we don't have any pets at the moment, perhaps it's time to restock?"
+                yield "Sorry, we don't have any pets at the moment, perhaps it's time to restock?"
+                return
         else:
             pet = get_one_by_type(pet_type, self.pet_directory.available())
 
@@ -340,16 +345,17 @@ class AgencySync:
             try:
                 alternative = random.choice(list(self.pet_directory.available())).name
             except IndexError:
-                return "Sorry, we don't have any pets at the moment, perhaps it's time to restock?"
+                yield "Sorry, we don't have any pets at the moment, perhaps it's time to restock?"
+                return
 
-            return f"Sorry, we don't have {a_an(pet_type)} at the moment, perhaps you'd like {a_an(alternative)} instead?"
+            yield f"Sorry, we don't have {a_an(pet_type)} at the moment, perhaps you'd like {a_an(alternative)} instead?"
+            return
 
         self.pet_directory.set_owner(pet, adopter)
 
-        return [
-            ("send_message", adopter, NOISES.get(pet.emoji, "💖"), pet),
-            ("sync_update_pet", pet, {"name": owned_pet_name(adopter, pet.type)}),
-        ]
+        yield ("send_message", adopter, NOISES.get(pet.emoji, "💖"), pet)
+        update["name"] = owned_pet_name(adopter, pet.type)
+        yield ("sync_update_pet", pet, update)
 
     def handle_abandon(self, adopter, pet_type):
         owned_pets = self.pet_directory.owned(adopter["id"])
@@ -530,9 +536,6 @@ class AgencySync:
         if pet.emoji == GENIE_EMOJI:
             print("Found the genie: ", pet_json)
             self.genie = pet
-        elif pet.emoji == "🎁":
-            print("Found the mystery box: ", pet_json)
-            self.mystery = pet
         else:
             self.pet_directory.add(pet)
 
