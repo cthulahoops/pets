@@ -416,6 +416,15 @@ class AgencySync:
             if pet.is_in_day_care_center
         ]
 
+        if pet_type == "all":
+            events = []
+            for pet in pets_in_day_care:
+                pet.is_in_day_care_center = False
+                events.append(("send_message", owner, NOISES.get(pet.emoji, "💖"), pet))
+            if not events:
+                return "Sorry, you have no pets in day care. Would you like to drop one off?"
+            return events
+
         pet = get_one_by_type(pet_type, pets_in_day_care)
 
         if not pet:
