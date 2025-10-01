@@ -305,6 +305,7 @@ class AgencySync:
         if pet_type == "surprise" or pet_type == "mystery":
             pet_type = random.choice(PETS)
             pet = self.mystery
+            self.pet_directory.set_owner(pet, adopter)
             return [
                 (
                     "create_pet",
