@@ -366,6 +366,19 @@ class AgencySync:
             if not pet.is_in_day_care_center
         ]
 
+        if pet_type == "all":
+            events = []
+            for pet in pets_not_in_day_care:
+                pet.is_in_day_care_center = True
+                position = DAY_CARE_CENTER.random_point()
+                events.append(
+                    ("send_message", owner, "Please don't forget about me!", pet)
+                )
+                events.append(("update_pet", pet, position))
+            if not events:
+                return "Sorry, you don't have any pets to drop off, perhaps you'd like to adopt one?"
+            return events
+
         pet = get_one_by_type(pet_type, pets_not_in_day_care)
 
         if not pet:
