@@ -354,6 +354,33 @@ wheels = [
 ]
 
 [[package]]
+name = "pets"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "rctogether" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "black" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "rctogether", specifier = ">=0.3.4" }]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black", specifier = ">=23.11.0" },
+    { name = "pytest", specifier = ">=7.0.0" },
+    { name = "pytest-asyncio", specifier = ">=0.21.0" },
+    { name = "ruff", specifier = ">=0.1.5" },
+]
+
+[[package]]
 name = "platformdirs"
 version = "4.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -502,33 +529,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/11/75/f4dd0f3d6d929fe4b0523c4812af640ebaa9a253764c5159faf51cd4403b/rctogether-0.3.4.tar.gz", hash = "sha256:0d6bf679a8640827d86791f2744213b0aff2cf4d59a73bdb14fd006109b2262b", size = 7550 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/58/13/d11b9569ec3ced451a44b2ad5de73ac5318396c737643b8d2902d660574b/rctogether-0.3.4-py3-none-any.whl", hash = "sha256:00bf0d8013716716a7c40aa6264e83b9d9e8b38294b527ef8bf8b2ec6b46dd01", size = 5133 },
-]
-
-[[package]]
-name = "rocket"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "rctogether" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "black" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "rctogether", specifier = ">=0.3.4" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black", specifier = ">=23.11.0" },
-    { name = "pytest", specifier = ">=7.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.21.0" },
-    { name = "ruff", specifier = ">=0.1.5" },
 ]
 
 [[package]]
