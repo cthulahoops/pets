@@ -47,6 +47,6 @@ You can also give pets to people, and pet other people's pets!
 
 ## Design
 
-+ A sloppy natural language interface made with regexes: [pets/parser.py]
++ A sloppy natural language interface made with regexes: [pets/parser.py](pets/parser.py)
 + Gamification with artificial scarcity.
 + Stateless controller! All long term storage is in the RC Together server.
