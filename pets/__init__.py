@@ -308,8 +308,6 @@ class AgencySync:
             yield "Since 2015 the brontasaurus and apatosaurus have been recognised as separate species. Would you like to adopt a brontasaurus?"
             return
 
-        update = {}
-
         if pet_type == "surprise" or pet_type == "mystery":
             if not self.pet_directory.mystery_pets:
                 yield "Sorry, we don't have any mystery boxes at the moment."
