@@ -2,7 +2,7 @@
 
 import os
 import textwrap
-from .geometry import parse_position, position_tuple, offset_position
+from .geometry import parse_position, position_tuple, offset_position, Region
 
 
 MANNERS = [
@@ -100,9 +100,6 @@ SPAWN_POINTS = {
 }
 
 MYSTERY_HOME = offset_position(GENIE_HOME, {"x": 5, "y": 2})
-
-
-from .geometry import Region
 
 CORRAL = Region({"x": 0, "y": 40}, {"x": 19, "y": 58})
 DAY_CARE_CENTER = Region({"x": 0, "y": 62}, {"x": 11, "y": 74})
