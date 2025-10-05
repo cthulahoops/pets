@@ -31,6 +31,7 @@ class Region:
 
     def random_point(self):
         import random
+
         return {
             "x": random.randint(self.top_left["x"], self.bottom_right["x"]),
             "y": random.randint(self.top_left["y"], self.bottom_right["y"]),

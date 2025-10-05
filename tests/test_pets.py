@@ -128,9 +128,7 @@ def available_pets_fixture():
             "emoji": pet["emoji"],
             "pos": {"x": spawn_point[0], "y": spawn_point[1]},
         }
-        for (pet_id, pet, spawn_point) in zip(
-            itertools.count(800), PETS, SPAWN_POINTS
-        )
+        for (pet_id, pet, spawn_point) in zip(itertools.count(800), PETS, SPAWN_POINTS)
     ]
 
 

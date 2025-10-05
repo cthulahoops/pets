@@ -40,6 +40,7 @@ class PetDirectory:
     def empty_spawn_points(self):
         # Import at runtime to avoid circular dependency
         from .constants import SPAWN_POINTS
+
         return SPAWN_POINTS - set(self._available_pets.keys())
 
     def owned(self, owner_id):
