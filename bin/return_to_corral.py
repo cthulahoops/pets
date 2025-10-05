@@ -5,7 +5,7 @@ import argparse
 import asyncio
 
 import rctogether
-from pets import CORRAL, GENIE_EMOJI
+from pets.constants import CORRAL, GENIE_EMOJI
 
 RATE_LIMITING_DELAY = 0.1
 MAX_RETRIES = 5

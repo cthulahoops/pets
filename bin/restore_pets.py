@@ -1,8 +1,8 @@
 import asyncio
 import rctogether
-import pets
+from pets.constants import PETS
 
-EMOJI = {pet["name"]: pet["emoji"] for pet in pets.PETS}
+EMOJI = {pet["name"]: pet["emoji"] for pet in PETS}
 EMOJI["sheep"] = "🐑"
 EMOJI["duck"] = "🦆"
 
