@@ -1,89 +1,54 @@
-"""Pet Agency - A virtual pet adoption system."""
+"""Pet Agency - A virtual pet adoption system.
 
-# Public API exports for backward compatibility
+This module provides a minimal public API for the pet agency system.
+Most internal implementation details are in submodules.
+"""
 
-# Core classes
-from .agency import Agency, reset_agency
-from .pet import Pet
+# Main API
+from .agency import Agency
 
-# Geometry utilities
-from .geometry import (
-    parse_position,
-    position_tuple,
-    offset_position,
-    is_adjacent,
-    Region,
-    DELTAS,
+# Constants needed by bin/ scripts
+from .constants import (
+    CORRAL,
+    GENIE_EMOJI,
+    PETS,
 )
 
-# Configuration and constants
+# Additional constants and utilities needed by tests
+# (These could be removed if tests were refactored to not depend on them)
 from .constants import (
-    # Pet and manner constants
-    MANNERS,
-    PETS,
-    ANIMAL_NAMES,
-    MANNER_WORDS,
-    MANNER_PREFIXES,
-    # Genie configuration
-    GENIE_NAME,
-    GENIE_EMOJI,
-    GENIE_HOME,
-    SPAWN_POINTS,
-    MYSTERY_HOME,
-    # Game regions
-    CORRAL,
     DAY_CARE_CENTER,
-    # Game constants
-    PET_BOREDOM_TIMES,
-    # Message templates
     HELP_TEXT,
+    MYSTERY_HOME,
     NOISES,
+    PET_BOREDOM_TIMES,
     SAD_MESSAGE_TEMPLATES,
+    SPAWN_POINTS,
     THANKS_RESPONSES,
 )
-
-# Lure constants
+from .geometry import is_adjacent
 from .lured import LURE_TIME_SECONDS
 
-# Parser (commonly used in tests)
-from .parser import parse_command
-
-# Update queues (used in tests)
+# Update queues module (needed by tests)
 from . import update_queues
 
 __all__ = [
-    # Core classes
+    # Main API
     "Agency",
-    "reset_agency",
-    "Pet",
-    # Geometry utilities
-    "parse_position",
-    "position_tuple",
-    "offset_position",
-    "is_adjacent",
-    "Region",
-    "DELTAS",
-    # Configuration and constants
-    "MANNERS",
-    "PETS",
-    "ANIMAL_NAMES",
-    "MANNER_WORDS",
-    "MANNER_PREFIXES",
-    "GENIE_NAME",
-    "GENIE_EMOJI",
-    "GENIE_HOME",
-    "SPAWN_POINTS",
-    "MYSTERY_HOME",
+    # Constants for bin/ scripts
     "CORRAL",
+    "GENIE_EMOJI",
+    "PETS",
+    # Test dependencies (could be removed with test refactoring)
     "DAY_CARE_CENTER",
-    "PET_BOREDOM_TIMES",
     "HELP_TEXT",
+    "MYSTERY_HOME",
     "NOISES",
+    "PET_BOREDOM_TIMES",
     "SAD_MESSAGE_TEMPLATES",
+    "SPAWN_POINTS",
     "THANKS_RESPONSES",
+    "is_adjacent",
     "LURE_TIME_SECONDS",
-    # Parser
-    "parse_command",
-    # Update queues module
     "update_queues",
 ]
