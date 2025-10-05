@@ -13,9 +13,8 @@ class Lured:
         self.by_petter = defaultdict(list)
 
     def add(self, pet, petter):
-        # Import at runtime to allow tests to modify the value
-        import pets
-        self.pets[pet.id] = time.time() + pets.LURE_TIME_SECONDS
+        # Use module-level variable to allow tests to modify the value
+        self.pets[pet.id] = time.time() + LURE_TIME_SECONDS
         self.by_petter[petter["id"]].append(pet)
 
     def check(self, pet):
