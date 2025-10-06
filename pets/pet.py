@@ -6,9 +6,10 @@ class Pet:
         self.bot_json = bot_json
         self.pos = bot_json["pos"]
         self.is_in_day_care_center = False
-        if bot_json.get("message"):
-            self.owner = bot_json["message"]["mentioned_entity_ids"][0]
-            if "forget" in bot_json["message"]["text"]:
+        message = bot_json.get("message")
+        if message and message.get("mentioned_entity_ids"):
+            self.owner = message["mentioned_entity_ids"][0]
+            if "forget" in message.get("text", ""):
                 self.is_in_day_care_center = True
         else:
             self.owner = None
