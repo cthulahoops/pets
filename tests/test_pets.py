@@ -251,6 +251,29 @@ async def test_successful_adopt_at_random(genie, rocket, person):
 
 
 @pytest.mark.asyncio
+async def test_successful_seahorse_adoption(genie, rocket, person):
+    session = MockSession({"bots": [genie, rocket]})
+
+    async with await Agency.create(session) as agency:
+        await agency.handle_entity(
+            incoming_message(person, genie, "adopt a seahorse, please!")
+        )
+
+    assert await session.message_received(rocket, person) == NOISES["🚀"]
+
+    request = await session.get_request()
+
+    assert request == Request(
+        method="patch",
+        path="bots",
+        id=rocket["id"],
+        json={"bot": {"name": f"{person['person_name']}'s seahorse"}},
+    )
+
+    assert is_adjacent(person["pos"], await session.moved_to())
+
+
+@pytest.mark.asyncio
 async def test_successful_abandonment(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 
