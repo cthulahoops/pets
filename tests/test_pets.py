@@ -5,12 +5,25 @@ from datetime import datetime
 
 import pytest
 
-import pets
+from pets import Agency
+from pets.constants import (
+    PETS,
+    SPAWN_POINTS,
+    THANKS_RESPONSES,
+    NOISES,
+    DAY_CARE_CENTER,
+    SAD_MESSAGE_TEMPLATES,
+    MYSTERY_HOME,
+    HELP_TEXT,
+)
+from pets.geometry import is_adjacent
 import pets.update_queues
+import pets.constants
+import pets.lured
 
 # Reduce the sleep delay in the bot update code so tests run faster.
 pets.update_queues.SLEEP_AFTER_UPDATE = 0.01
-pets.PET_BOREDOM_TIMES = (1, 1)
+pets.constants.PET_BOREDOM_TIMES = (1, 1)
 
 Request = namedtuple("Request", ("method", "path", "id", "json"))
 
@@ -115,9 +128,7 @@ def available_pets_fixture():
             "emoji": pet["emoji"],
             "pos": {"x": spawn_point[0], "y": spawn_point[1]},
         }
-        for (pet_id, pet, spawn_point) in zip(
-            itertools.count(800), pets.PETS, pets.SPAWN_POINTS
-        )
+        for (pet_id, pet, spawn_point) in zip(itertools.count(800), PETS, SPAWN_POINTS)
     ]
 
 
@@ -172,17 +183,17 @@ def incoming_message(sender, recipients, message, dt=0):
 async def test_thanks(genie, person):
     session = MockSession({"bots": [genie]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(incoming_message(person, genie, "thanks!"))
 
-    assert await session.message_received(genie, person) in pets.THANKS_RESPONSES
+    assert await session.message_received(genie, person) in THANKS_RESPONSES
 
 
 @pytest.mark.asyncio
 async def test_adopt_unavailable(genie, rocket, person):
     session = MockSession({"bots": [genie, rocket]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "adopt the dog, please!")
         )
@@ -197,12 +208,12 @@ async def test_adopt_unavailable(genie, rocket, person):
 async def test_successful_adoption(genie, rocket, person):
     session = MockSession({"bots": [genie, rocket]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "adopt the rocket, please!")
         )
 
-    assert await session.message_received(rocket, person) == pets.NOISES["🚀"]
+    assert await session.message_received(rocket, person) == NOISES["🚀"]
 
     request = await session.get_request()
 
@@ -213,19 +224,19 @@ async def test_successful_adoption(genie, rocket, person):
         json={"bot": {"name": f"{person['person_name']}'s rocket"}},
     )
 
-    assert pets.is_adjacent(person["pos"], await session.moved_to())
+    assert is_adjacent(person["pos"], await session.moved_to())
 
 
 @pytest.mark.asyncio
 async def test_successful_adopt_at_random(genie, rocket, person):
     session = MockSession({"bots": [genie, rocket]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "adopt a pet, please!")
         )
 
-    assert await session.message_received(rocket, person) == pets.NOISES["🚀"]
+    assert await session.message_received(rocket, person) == NOISES["🚀"]
 
     request = await session.get_request()
 
@@ -236,20 +247,20 @@ async def test_successful_adopt_at_random(genie, rocket, person):
         json={"bot": {"name": f"{person['person_name']}'s rocket"}},
     )
 
-    assert pets.is_adjacent(person["pos"], await session.moved_to())
+    assert is_adjacent(person["pos"], await session.moved_to())
 
 
 @pytest.mark.asyncio
 async def test_successful_abandonment(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "I wish to heartlessly abandon my cat!")
         )
 
     assert await session.message_received(owned_cat, person) in [
-        template.format(pet_name="cat") for template in pets.SAD_MESSAGE_TEMPLATES
+        template.format(pet_name="cat") for template in SAD_MESSAGE_TEMPLATES
     ]
 
     request = await session.get_request()
@@ -262,7 +273,7 @@ async def test_successful_abandonment(genie, owned_cat, person):
 async def test_unsuccessful_abandonment(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "I wish to heartlessly abandon my owl!")
         )
@@ -277,7 +288,7 @@ async def test_unsuccessful_abandonment(genie, owned_cat, person):
 async def test_successful_day_care_drop_off(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "Please look after my cat!")
         )
@@ -289,7 +300,7 @@ async def test_successful_day_care_drop_off(genie, owned_cat, person):
         == "Please don't forget about me!"
     )
 
-    assert await session.moved_to() in pets.DAY_CARE_CENTER
+    assert await session.moved_to() in DAY_CARE_CENTER
 
     await asyncio.sleep(1)
     assert not session.pending_requests()
@@ -299,7 +310,7 @@ async def test_successful_day_care_drop_off(genie, owned_cat, person):
 async def test_unsuccessful_day_care_drop_off(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "Please look after my unicorn!")
         )
@@ -314,21 +325,21 @@ async def test_unsuccessful_day_care_drop_off(genie, owned_cat, person):
 async def test_successful_day_care_pick_up(genie, in_day_care_unicorn, person):
     session = MockSession({"bots": [genie, in_day_care_unicorn]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "Could I collect my unicorn, please?")
         )
 
     assert await session.message_received(in_day_care_unicorn, person) == "✨"
 
-    assert pets.is_adjacent(person["pos"], await session.moved_to())
+    assert is_adjacent(person["pos"], await session.moved_to())
 
 
 @pytest.mark.asyncio
 async def test_wrong_pet_day_care_pick_up(genie, in_day_care_unicorn, person):
     session = MockSession({"bots": [genie, in_day_care_unicorn]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "Could I collect my rocket, please?")
         )
@@ -340,21 +351,35 @@ async def test_wrong_pet_day_care_pick_up(genie, in_day_care_unicorn, person):
 
 
 @pytest.mark.asyncio
+async def test_day_care_pick_up_all_pets(genie, in_day_care_unicorn, person):
+    session = MockSession({"bots": [genie, in_day_care_unicorn]})
+
+    async with await Agency.create(session) as agency:
+        await agency.handle_entity(
+            incoming_message(person, genie, "Could I collect my all, please?")
+        )
+
+    assert await session.message_received(in_day_care_unicorn, person) == "✨"
+
+    assert is_adjacent(person["pos"], await session.moved_to())
+
+
+@pytest.mark.asyncio
 async def test_follow_owner(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         person["pos"] = {"x": 50, "y": 45}
         await agency.handle_entity(person)
 
-    assert pets.is_adjacent(person["pos"], await session.moved_to())
+    assert is_adjacent(person["pos"], await session.moved_to())
 
 
 @pytest.mark.asyncio
 async def test_owner_changes_name(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         person["person_name"] = "Eve Newname"
         await agency.handle_entity(person)
 
@@ -366,7 +391,7 @@ async def test_owner_changes_name(genie, owned_cat, person):
 async def test_owner_changes_name_back_again(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity({**owned_cat, "name": "Eve Newname's cat"})
         person["person_name"] = "Faker McFakeface"
         await agency.handle_entity(person)
@@ -379,7 +404,7 @@ async def test_owner_changes_name_back_again(genie, owned_cat, person):
 async def test_owner_changes_name_during_day_care(genie, in_day_care_unicorn, person):
     session = MockSession({"bots": [genie, in_day_care_unicorn]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         person["person_name"] = "Eve Newname"
         await agency.handle_entity(person)
 
@@ -390,7 +415,7 @@ async def test_owner_changes_name_during_day_care(genie, in_day_care_unicorn, pe
 @pytest.mark.asyncio
 async def test_ignores_unrelated_other(genie, owned_cat):
     session = MockSession({"bots": [genie]})
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(owned_cat)
 
 
@@ -445,9 +470,9 @@ async def test_ignores_unrelated_other(genie, owned_cat):
 @pytest.mark.asyncio
 async def test_pet_a_pet(genie, owned_cat, petless_person, person):
     session = MockSession({"bots": [genie, owned_cat]})
-    pets.LURE_TIME_SECONDS = 600
+    pets.lured.LURE_TIME_SECONDS = 600
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         petless_person["pos"] = {"x": 1, "y": 2}  # Cat is at 1,1 - this is adjacent.
         await agency.handle_entity(petless_person)
         await agency.handle_entity(
@@ -461,15 +486,15 @@ async def test_pet_a_pet(genie, owned_cat, petless_person, person):
         await agency.handle_entity(person)
 
     pet_position = await session.moved_to()
-    assert pets.is_adjacent(petless_person["pos"], pet_position)
+    assert is_adjacent(petless_person["pos"], pet_position)
 
 
 @pytest.mark.asyncio
 async def test_pet_a_pet_with_pet_move(genie, owned_cat, petless_person, person):
     session = MockSession({"bots": [genie, owned_cat]})
-    pets.LURE_TIME_SECONDS = 600
+    pets.lured.LURE_TIME_SECONDS = 600
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity({**owned_cat, "pos": {"x": 99, "y": 108}})
         petless_person["pos"] = {
             "x": 100,
@@ -487,15 +512,15 @@ async def test_pet_a_pet_with_pet_move(genie, owned_cat, petless_person, person)
         await agency.handle_entity(person)
 
     pet_position = await session.moved_to()
-    assert pets.is_adjacent(petless_person["pos"], pet_position)
+    assert is_adjacent(petless_person["pos"], pet_position)
 
 
 @pytest.mark.asyncio
 async def test_pet_a_pet_expired(genie, owned_cat, petless_person, person):
     session = MockSession({"bots": [genie, owned_cat]})
-    pets.LURE_TIME_SECONDS = -1
+    pets.lured.LURE_TIME_SECONDS = -1
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         petless_person["pos"] = {"x": 1, "y": 2}  # Cat is at 1,1 - this is adjacent.
         await agency.handle_entity(petless_person)
         await agency.handle_entity(
@@ -511,17 +536,17 @@ async def test_pet_a_pet_expired(genie, owned_cat, petless_person, person):
         await agency.handle_entity(petless_person)
 
     pet_position = await session.moved_to()
-    assert pets.is_adjacent(person["pos"], pet_position)
+    assert is_adjacent(person["pos"], pet_position)
 
 
 @pytest.mark.asyncio
 async def test_restock_from_empty(genie, person):
     session = MockSession({"bots": [genie]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(incoming_message(person, genie, "Time to restock!"))
 
-    assert len(agency.agency_sync.pet_directory.available()) == len(pets.SPAWN_POINTS)
+    assert len(agency.agency_sync.pet_directory.available()) == len(SPAWN_POINTS)
     assert await session.message_received(genie, person) == "New pets now in stock!"
 
 
@@ -529,7 +554,7 @@ async def test_restock_from_empty(genie, person):
 async def test_restock_partial(genie, person, available_pets):
     session = MockSession({"bots": [genie] + available_pets[:4]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(incoming_message(person, genie, "Time to restock!"))
 
     request = await session.get_request()
@@ -541,7 +566,7 @@ async def test_restock_partial(genie, person, available_pets):
         == "A bat was unwanted and has been sent to the farm."
     )
 
-    assert len(agency.agency_sync.pet_directory.available()) == len(pets.SPAWN_POINTS)
+    assert len(agency.agency_sync.pet_directory.available()) == len(SPAWN_POINTS)
     assert await session.message_received(genie, person) == "New pets now in stock!"
 
 
@@ -549,10 +574,10 @@ async def test_restock_partial(genie, person, available_pets):
 async def test_restock_full(genie, person, available_pets):
     session = MockSession({"bots": [genie] + available_pets})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(incoming_message(person, genie, "Time to restock!"))
 
-    assert len(agency.agency_sync.pet_directory.available()) == len(pets.SPAWN_POINTS)
+    assert len(agency.agency_sync.pet_directory.available()) == len(SPAWN_POINTS)
     assert await session.message_received(genie, person) == "New pets now in stock!"
 
 
@@ -563,11 +588,11 @@ async def test_successful_mystery_box_acquisition(genie, person):
         "id": 5555,
         "name": "Mystery Box",
         "emoji": "🎁",
-        "pos": {"x": pets.MYSTERY_HOME["x"], "y": pets.MYSTERY_HOME["y"]},
+        "pos": {"x": MYSTERY_HOME["x"], "y": MYSTERY_HOME["y"]},
     }
     session = MockSession({"bots": [genie, mystery_box]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(person, genie, "adopt a surprise, please!")
         )
@@ -581,12 +606,12 @@ async def test_successful_mystery_box_acquisition(genie, person):
     # Verify the emoji was changed from 🎁 to the revealed pet's emoji
     assert "emoji" in bot_update
     assert "name" in bot_update
-    updated_pet = [pet for pet in pets.PETS if pet["emoji"] == bot_update["emoji"]]
+    updated_pet = [pet for pet in PETS if pet["emoji"] == bot_update["emoji"]]
     assert bot_update["name"] == updated_pet[0]["name"]
 
     # Mystery box should send a message with the noise of the revealed pet
     message = await session.message_received(mystery_box, person)
-    assert message in pets.NOISES.values()
+    assert message in NOISES.values()
 
     # Pet should be renamed and emoji should be updated to the revealed pet
     request = await session.get_request()
@@ -597,14 +622,14 @@ async def test_successful_mystery_box_acquisition(genie, person):
     assert person["person_name"] in bot_update["name"]
 
     # Pet should move adjacent to person
-    assert pets.is_adjacent(person["pos"], await session.moved_to())
+    assert is_adjacent(person["pos"], await session.moved_to())
 
 
 @pytest.mark.asyncio
 async def test_successful_give_pet(genie, person, petless_person, owned_cat):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         # Send preliminary message to make sure the agency knows about the recipient.
         await agency.handle_entity(
             incoming_message(
@@ -623,7 +648,7 @@ async def test_successful_give_pet(genie, person, petless_person, owned_cat):
 
     assert (
         await session.message_received(owned_cat, petless_person)
-        == pets.NOISES[owned_cat["emoji"]]
+        == NOISES[owned_cat["emoji"]]
     )
     request = await session.get_request()
 
@@ -634,14 +659,14 @@ async def test_successful_give_pet(genie, person, petless_person, owned_cat):
         json={"bot": {"name": f"{petless_person['person_name']}'s cat"}},
     )
 
-    assert pets.is_adjacent(petless_person["pos"], await session.moved_to())
+    assert is_adjacent(petless_person["pos"], await session.moved_to())
 
 
 @pytest.mark.asyncio
 async def test_unsuccessful_give_pet(genie, person, petless_person, owned_cat):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(
             incoming_message(
                 person,
@@ -660,7 +685,7 @@ async def test_unsuccessful_give_pet(genie, person, petless_person, owned_cat):
 async def test_genie_autospawn():
     session = MockSession({"bots": []})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         pass
 
     assert agency.agency_sync.genie.name == "Pet Agency Genie"
@@ -670,7 +695,7 @@ async def test_genie_autospawn():
 @pytest.mark.parametrize(
     "message,response",
     [
-        ("help me!", pets.HELP_TEXT),
+        ("help me!", HELP_TEXT),
         (
             "adopt the unicorn now, you stupid genie",
             "No please? Our pets are only available to polite homes.",
@@ -720,7 +745,7 @@ async def test_basic_messages_user_with_no_pets(
 ):
     session = MockSession({"bots": [genie, owned_cat]})
 
-    async with await pets.Agency.create(session) as agency:
+    async with await Agency.create(session) as agency:
         await agency.handle_entity(incoming_message(petless_person, genie, message))
 
     assert await session.message_received(genie, petless_person) == response
