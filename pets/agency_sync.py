@@ -105,7 +105,7 @@ class AgencySync:
             except IndexError:
                 yield "You already have too many seahorses."
                 return
-        if pet_type == "surprise" or pet_type == "mystery":
+        elif pet_type == "surprise" or pet_type == "mystery":
             if not self.pet_directory.mystery_pets:
                 yield "Sorry, we don't have any mystery boxes at the moment."
                 return
