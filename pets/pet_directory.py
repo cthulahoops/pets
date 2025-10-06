@@ -31,8 +31,14 @@ class PetDirectory:
 
         if pet.owner:
             self._owned_pets[pet.owner].remove(pet)
-        elif position_tuple(pet.pos) in self._available_pets:
-            del self._available_pets[position_tuple(pet.pos)]
+        elif pet in self.mystery_pets:
+            # Mystery pet - remove from mystery_pets list
+            self.mystery_pets.remove(pet)
+        else:
+            # Available pet - remove from position-indexed dict
+            pos_key = position_tuple(pet.pos)
+            if pos_key in self._available_pets:
+                del self._available_pets[pos_key]
 
     def available(self):
         return self._available_pets.values()
