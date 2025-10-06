@@ -351,6 +351,20 @@ async def test_wrong_pet_day_care_pick_up(genie, in_day_care_unicorn, person):
 
 
 @pytest.mark.asyncio
+async def test_day_care_pick_up_all_pets(genie, in_day_care_unicorn, person):
+    session = MockSession({"bots": [genie, in_day_care_unicorn]})
+
+    async with await Agency.create(session) as agency:
+        await agency.handle_entity(
+            incoming_message(person, genie, "Could I collect my all, please?")
+        )
+
+    assert await session.message_received(in_day_care_unicorn, person) == "✨"
+
+    assert is_adjacent(person["pos"], await session.moved_to())
+
+
+@pytest.mark.asyncio
 async def test_follow_owner(genie, owned_cat, person):
     session = MockSession({"bots": [genie, owned_cat]})
 

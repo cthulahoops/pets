@@ -256,7 +256,7 @@ class AgencySync:
             if pet.is_in_day_care_center
         ]
 
-        if pet_type == ("all", "pets"):
+        if pet_type in ("all", "pets"):
             events = []
             for pet in pets_in_day_care:
                 pet.is_in_day_care_center = False
