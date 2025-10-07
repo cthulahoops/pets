@@ -56,8 +56,18 @@ async def deduplicated_updates(queue, queue_id=None):
             while updates and updates[-1] is None:
                 updates.pop()
 
+            # Close discarded coroutines to avoid RuntimeWarning
+            for update in updates[:-1] if updates else []:
+                if hasattr(update, 'close'):
+                    update.close()
+
             if updates:
                 yield updates[-1]
             return
+
+        # Close discarded coroutines to avoid RuntimeWarning
+        for update in updates[:-1]:
+            if hasattr(update, 'close'):
+                update.close()
 
         yield updates[-1]

@@ -13,7 +13,7 @@ from .constants import PET_BOREDOM_TIMES, CORRAL
 
 
 def parse_dt(date_string):
-    return datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ")
+    return datetime.datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
 
 
 async def reset_agency():
@@ -37,7 +37,7 @@ class Agency:
 
     def __init__(self, session):
         self.session = session
-        self.processed_message_dt = datetime.datetime.utcnow()
+        self.processed_message_dt = datetime.datetime.now(datetime.timezone.utc)
         self.agency_sync = AgencySync()
         self._update_queues = UpdateQueues(self.queue_iterator)
 

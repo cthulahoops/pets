@@ -1,7 +1,7 @@
 from collections import namedtuple
 import asyncio
 import itertools
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -168,7 +168,7 @@ def incoming_message(sender, recipients, message, dt=0):
     recipients = [recipient["id"] for recipient in recipients]
 
     epoch_seconds = 2015491007  # Some time in 2033
-    sent_at = datetime.utcfromtimestamp(epoch_seconds + dt).strftime(
+    sent_at = datetime.fromtimestamp(epoch_seconds + dt, timezone.utc).strftime(
         "%Y-%m-%dT%H:%M:%SZ"
     )
     sender["message"] = {
