@@ -63,6 +63,7 @@ PETS = [
     {"emoji": "🐙", "name": "octopus", "noise": "Never Graduate!"},
     {"emoji": "🐇", "name": "rabbit"},
     {"emoji": "🦭", "name": "seal", "noise": "bork bork!"},
+    {"emoji": "🤖", "name": "robot", "noise": "beep boop"},
 ]
 
 # Derived constants
