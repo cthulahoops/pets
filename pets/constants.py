@@ -61,7 +61,6 @@ PETS = [
     {"emoji": "🪨", "name": "rock", "noise": "🤘"},
     {"emoji": "🦥", "name": "sloth", "noise": "zzzzzzzzzzzz..."},
     {"emoji": "🐙", "name": "octopus", "noise": "Never Graduate!"},
-    {"emoji": "🐇", "name": "rabbit"},
     {"emoji": "🦭", "name": "seal", "noise": "bork bork!"},
     {"emoji": "🤖", "name": "robot", "noise": "beep boop"},
 ]
